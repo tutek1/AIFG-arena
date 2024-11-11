@@ -6,6 +6,7 @@ const ACCEL = 150
 @onready var Laser = preload('res://laser.tscn')
 @onready var use_agent = get_parent().use_agent
 @onready var agent = get_node('agent')
+@onready var RADIUS = get_node('CollisionShape2D').shape.radius
 
 var lasers = 0
 
@@ -55,7 +56,9 @@ func _physics_process(delta):
                 convert_mesh(%nav_region.navigation_polygon.get_navigation_mesh())
                 mesh_version = get_parent().mesh_version
 
-            action = agent.action(wall_polygons, get_parent().gems, polygons, neighbors)
+            var gems: Array[Vector2]
+            gems.assign(get_parent().gems.map(func(g): return g.position))
+            action = agent.action(wall_polygons, gems, polygons, neighbors)
 
     var turn = action[0] if use_agent else Input.get_axis('ui_left', 'ui_right')
     turn = clampi(turn, -1, 1)

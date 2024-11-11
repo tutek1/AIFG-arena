@@ -1,15 +1,15 @@
 extends Node2D
 
 @onready var ship = get_parent()
-@onready var SHIP_RADIUS = ship.get_node('CollisionShape2D').shape.radius
 @onready var debug_path = ship.get_node('../debug_path')
 
 var ticks = 0
 var spin = 0
 var thrust = false
 
-# This method is called on every tick to choose an action.
-func action(_walls: Array[PackedVector2Array], _gems: Array[Gem], 
+# This method is called on every tick to choose an action.  See README.md
+# for a detailed description of its arguments and return value.
+func action(_walls: Array[PackedVector2Array], _gems: Array[Vector2], 
             _polygons: Array[PackedVector2Array], _neighbors: Array[Array]):
 
     # This is a dummy agent that just moves around randomly.
