@@ -1,5 +1,6 @@
 class_name Util
 
+# Given a point p and a polygon, return the point on the polygon that is closest to p.
 static func get_closest_point_on_polygon(p: Vector2, polygon: PackedVector2Array):
     var min_dist = INF
     var closest_point = null
@@ -13,6 +14,9 @@ static func get_closest_point_on_polygon(p: Vector2, polygon: PackedVector2Array
 
     return closest_point
 
+# Given a line segment represented by points p and q, plus a polygon, return the
+# shortest distance from the line segment to the polygon.  This will be 0 if the line
+# segment intersects the polygon.
 static func distance_segment_to_polygon(p: Vector2, q: Vector2, polygon: PackedVector2Array):
     var d = INF
     for i in range(-1, polygon.size() - 1):

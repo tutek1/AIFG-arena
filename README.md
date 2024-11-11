@@ -94,13 +94,19 @@ In the Godot editor, if you click on the top-level node ("arena") in the Scene t
 
 * Use Agent (default = false): When true, the agent controls the game automatically.  When false, the user controls the game from the keyboard.
 
-* Random Seed (default = -1): If this is -1, the game will use different random values each time it runs.  You can set this to a non-negative seed value, in which case all wall and gem positions will the same in every game.  This may be useful for debugging.
+* Random Seed (default = -1): If this is -1, the game will use different random values each time it runs.  You can set this to a non-negative seed value, in which case all wall and gem positions will be the same in every game.  This may be useful for debugging.
 
 * Starting Level (default = 1): Set this to a higher value if you want the game to begin on a more difficult level.
 
 * Show NavMesh (default = false): If true, the game will display the navigation mesh for debugging purposes.
 
 * Show Path (default = false): If true, the game will display any path that you have set in `debug_path` as described above.
+
+## Notes
+
+The file `util.gd` contains a couple of utility methods that may be helpful for writing an agent.
+
+Currently the ship's position is not always guaranteed to be in contained in some navigation mesh polygon.  That's because the navigation mesh excludes areas that are close to walls, and it's sometimes possible for the ship to be just inside those areas, a pixel or two away from any navigation mesh polygon.
 
 ## Author
 
