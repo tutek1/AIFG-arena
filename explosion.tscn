@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://du7g1he5hbkap"]
+
+[node name="explosion" type="CPUParticles2D"]
+emitting = false
+amount = 50
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 0.5
+emission_shape = 3
+emission_rect_extents = Vector2(10, 10)
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 200.0
+initial_velocity_max = 300.0
+scale_amount_max = 10.0
+color = Color(0.772549, 1, 1, 1)
