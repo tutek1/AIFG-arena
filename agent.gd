@@ -20,9 +20,9 @@ func action(_walls: Array[PackedVector2Array], _gems: Array[Vector2],
 	var spin : int = 0
 	var thrust : int = 0
 	
-	# Navigate to target
+	# Check target validity
 	var dist_to_target = _target.distance_to(ship.position + ship.velocity)
-	if dist_to_target < 5 or _target_idx == -1:
+	if dist_to_target < 10 or _target_idx == -1:
 		_target_idx += 1
 		if _path.size() == 0 or _target_idx >= _path.size():
 			#_set_path(_get_closest_gem(gems))
@@ -33,6 +33,7 @@ func action(_walls: Array[PackedVector2Array], _gems: Array[Vector2],
 		
 		_target = _path[_target_idx]
 	
+	# Navigate to target
 	var dir_to_target = _target - (ship.position + ship.velocity)
 	var angle_to_target = dir_to_target.angle_to(ship.transform.x)
 	if angle_to_target > 0.05:
