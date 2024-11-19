@@ -14,11 +14,14 @@ signal game_over
 @onready var Wall = preload('res://wall.tscn')
 
 var level = 0
-var mesh_version = 0
 var score = 0
 
 var building = true
 var walls = []
+
+var wall_polygons: Array[PackedVector2Array]
+var polygons: Array[PackedVector2Array]
+var neighbors: Array[Array]
 
 # We can't remove gems instantly from the tree when they are collected, so we
 # keep track of the existing gems here.
@@ -44,14 +47,41 @@ func _ready():
     get_tree().paused = true
     next_level.call_deferred()
 
+func convert_mesh():
+    var mesh = $nav_region.navigation_polygon.get_navigation_mesh()
+    var vertices = mesh.get_vertices()
+    var edge_map = {}
+
+    wall_polygons = []
+    for w in walls:
+        wall_polygons.append(w.transform * w.get_node('Polygon2D').polygon)
+
+    polygons = []
+    neighbors = []
+
+    for i in range(mesh.get_polygon_count()):
+        var pvertices = mesh.get_polygon(i)
+
+        var polygon = PackedVector2Array()
+        for k in pvertices:
+            var p = Vector2(vertices[k].x, vertices[k].z)
+            polygon.append(p)
+        polygons.append(polygon)
+
+        neighbors.append([])
+        for j in range(-1, pvertices.size() - 1):
+            var e = [pvertices[j], pvertices[j + 1]]
+            e.sort()
+            var k = edge_map.get(e)
+            if k != null:
+                neighbors[i].append(k)
+                neighbors[k].append(i)
+            else:
+                edge_map[e] = i
+
 func random_point(rect):
     return Vector2(Random.randf_range(rect.position.x, rect.end.x),
                    Random.randf_range(rect.position.y, rect.end.y))
-
-func collides(a, b):
-    var s = a.get_node('CollisionShape2D')
-    var t = b.get_node('CollisionShape2D')
-    return s.shape.collide(s.global_transform, t.shape, t.global_transform)
 
 func is_reachable(pos, epsilon):
     var map = get_world_2d().navigation_map
@@ -99,10 +129,8 @@ func build_level():
 
         walls.append(w)
 
-    var avoid = walls.duplicate()
-    avoid.append($ship)
-
     await get_tree().physics_frame
+    convert_mesh()
 
     for i in range(count):
         var gem = null
@@ -110,7 +138,11 @@ func build_level():
             gem = GemClass.instantiate()
             gem.position = random_point(extent.grow(-50))
 
-            if (not avoid.any(func(a): return collides(a, gem)) and
+            if (gem.position.distance_to($ship.position) > 100 and
+                gems.all(func(g):
+                    return gem.position.distance_to(g.position) > 30) and
+                polygons.any(func(poly):
+                    return Geometry2D.is_point_in_polygon(gem.position, poly)) and
                 is_reachable(gem.position, 0)):
                 break
 
@@ -118,9 +150,7 @@ func build_level():
 
         $gems.add_child(gem)
         gems.append(gem)
-        avoid.append(gem)
 
-    mesh_version += 1
     building = false
     get_tree().paused = false
 
@@ -178,7 +208,7 @@ func update_mesh():
     $nav_region.rebake()
 
     await get_tree().physics_frame
-    mesh_version += 1
+    convert_mesh()
 
 func laser_hit(obj):
     if obj in walls:
