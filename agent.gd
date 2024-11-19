@@ -16,8 +16,8 @@ func action(_walls: Array[PackedVector2Array], _gems: Array[Vector2],
     # Replace this code with your actual implementation.
     ticks += 1
     if ticks % 30 == 0:
-        spin = randi_range(-1, 1)
-        thrust = bool(randi_range(0, 1))
+        spin = Random.randi_range(-1, 1)
+        thrust = bool(Random.randi_range(0, 1))
     
     return [spin, thrust, false]
 

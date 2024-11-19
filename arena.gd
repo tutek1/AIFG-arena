@@ -36,17 +36,22 @@ func _ready():
 
     level = starting_level - 1
 
-    if random_seed != -1:
-        Random.seed(random_seed)
-
     var args = OS.get_cmdline_user_args()
-    for arg in args:
-        match arg:
+    var i = 0
+    while i < args.size():
+        match args[i]:
             '-agent':
                 use_agent = true
+            '-seed':
+                i += 1
+                random_seed = int(args[i])
             _:
-                print('unknown argument: ' + arg)
+                print('usage: godot -- [-agent] [-seed <int>]')
                 get_tree().quit()
+        i += 1
+
+    if random_seed != -1:
+        Random.seed(random_seed)
 
     next_level.call_deferred()
 

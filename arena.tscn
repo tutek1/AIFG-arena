@@ -44,7 +44,6 @@ font_size = 60
 process_mode = 1
 editor_description = "This is the description."
 script = ExtResource("1_1v0vr")
-random_seed = 0
 
 [node name="walls" type="Node2D" parent="." groups=["walls"]]
 unique_name_in_owner = true
