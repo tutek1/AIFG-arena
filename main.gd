@@ -31,6 +31,7 @@ func _ready():
 func start_game():
     arena = Arena.instantiate()
     if random_seed != -1:
+        print('running game with seed %d' % random_seed)
         arena.random_seed = random_seed
         arena.use_agent = true
 

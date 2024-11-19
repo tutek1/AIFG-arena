@@ -88,7 +88,7 @@ agent.gd contains a couple of notification methods that the game calls when cert
 
 The default implementations of these methods do nothing.  You may modify them as you like.
 
-### Game properties
+## Game properties
 
 In the Godot editor, if you click on the top-level node ("arena") in the Scene tree on the left then the Inspector (on the right) will display various properties that you can edit:
 
@@ -101,6 +101,31 @@ In the Godot editor, if you click on the top-level node ("arena") in the Scene t
 * Show NavMesh (default = false): If true, the game will display the navigation mesh for debugging purposes.
 
 * Show Path (default = false): If true, the game will display any path that you have set in `debug_path` as described above.
+
+## Running from the command line
+
+You can run the game from the command line.  To do so, open a terminal window in the project directory and run
+
+```
+$ godot
+```
+
+The game accepts an argument `-seed` that specifies a random seed for the game.  You should include `--` before `-seed`, so that Godot will interpret this as an argument to be passed to the program itself.  For example:
+
+```
+$ godot -- -seed 2
+```
+
+Additionally you may specify a range of seeds such as `1:5`, in which case the game will automatically run repeatedly, once for each seed in the given range.  After all games are complete, the program will report the average score achieved over all games.
+
+When you specify one or more seeds, the game will always be controlled by the agent, not by the keyboard.
+
+You can specify the Godot argument `--fixed-fps` to run a simulation at high speed.  The game's usual rate is 60 fps (frames per second).  Specify a __smaller__ number to run the game more quickly.  For example, `--fixed-fps 30` will run the game at double speed.  `--fixed-fps 2` will run the game at 30 times normal speed.  This is convenient for running a batch of simulations.  For example:
+
+```
+$ godot --fixed-fps 2 -- -seed 1:5
+```
+
 
 ## Notes
 
