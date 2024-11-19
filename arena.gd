@@ -6,6 +6,8 @@ extends Node2D
 @export var show_navmesh = false
 @export var show_path = false
 
+signal game_over
+
 @onready var Explosion = preload('res://explosion.tscn')
 @onready var GemClass = preload('res://gem.tscn')
 @onready var LaserIcon = preload('res://laser_icon.tscn')
@@ -36,23 +38,10 @@ func _ready():
 
     level = starting_level - 1
 
-    var args = OS.get_cmdline_user_args()
-    var i = 0
-    while i < args.size():
-        match args[i]:
-            '-agent':
-                use_agent = true
-            '-seed':
-                i += 1
-                random_seed = int(args[i])
-            _:
-                print('usage: godot -- [-agent] [-seed <int>]')
-                get_tree().quit()
-        i += 1
-
     if random_seed != -1:
         Random.seed(random_seed)
 
+    get_tree().paused = true
     next_level.call_deferred()
 
 func random_point(rect):
@@ -214,3 +203,4 @@ func _physics_process(_delta):
             $game_over.show()
             print('final score: %d' % score)
             get_tree().paused = true
+            game_over.emit()
