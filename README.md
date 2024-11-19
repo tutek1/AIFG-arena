@@ -29,7 +29,7 @@ You gain 10 points for each gem that you collect.  Also, if you finish a level b
 
 To write an agent in GDScript, edit the file `agent.gd` in this source distribution.  You will need to set the Use Agent property (see below) to make your agent active when you run the game.
 
-In `agent.gd` you will need to implement the action() method, which the game calls on every tick to find out what your agent wants to do.  action() takes four arguments:
+In `agent.gd` you will need to implement the `action()` method, which the game calls on every tick to find out what your agent wants to do.  `action()` takes four arguments:
 
 * `walls: Array[PackedVector2Array]`
 
@@ -82,9 +82,9 @@ At the top of agent.gd, a couple of useful global variables are defined:
 
 agent.gd contains a couple of notification methods that the game calls when certain events happen:
 
-* bounce() is called every time the agent has bounced off a wall.
+* `bounce()` is called every time the agent has bounced off a wall.
 
-* gem_collected() is called each time the agent has collected a gem.
+* `gem_collected()` is called each time the agent has collected a gem.
 
 The default implementations of these methods do nothing.  You may modify them as you like.
 
@@ -126,6 +126,13 @@ You can specify the Godot argument `--fixed-fps` to run a simulation at high spe
 $ godot --fixed-fps 2 -- -seed 1:5
 ```
 
+### Reproducibility
+
+For debugging you may wish your runs to be __reproducible__, i.e. for  a given random seed the agent will produce exactly the same score when run at any speed.  To achieve this, follow these rules in writing your agent:
+
+* Do not use a `Timer` object or any Godot function that produces an elapsed number of seconds.  Instead, if you want to keep track of elapsed time then increment a counter each time your agent's `action()` method is called.
+
+* Do not call Godot functions that produce random numbers.  Instead, use the functions `Random.randf_range()` and `Random.randi_range()` provided in the `Random` class in this project.
 
 ## Notes
 
