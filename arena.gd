@@ -22,6 +22,7 @@ var walls = []
 # keep track of the existing gems here.
 var gems: Array[Gem] = []
 
+var ticks = 0
 var time_left = 0
 
 const TIME_LIMIT = 60
@@ -36,7 +37,7 @@ func _ready():
     level = starting_level - 1
 
     if random_seed != -1:
-        seed(random_seed)
+        Random.seed(random_seed)
 
     var args = OS.get_cmdline_user_args()
     for arg in args:
@@ -50,8 +51,8 @@ func _ready():
     next_level.call_deferred()
 
 func random_point(rect):
-    return Vector2(randf_range(rect.position.x, rect.end.x),
-                   randf_range(rect.position.y, rect.end.y))
+    return Vector2(Random.randf_range(rect.position.x, rect.end.x),
+                   Random.randf_range(rect.position.y, rect.end.y))
 
 func collides(a, b):
     var s = a.get_node('CollisionShape2D')
@@ -88,8 +89,8 @@ func build_level():
 
         while true:
             w = Wall.instantiate()
-            w.scale.x = randf_range(20, 50)
-            w.rotation = randf_range(0, PI)
+            w.scale.x = Random.randf_range(20, 50)
+            w.rotation = Random.randf_range(0, PI)
             w.position = random_point(extent1)
             %walls.add_child(w)
 
@@ -158,6 +159,7 @@ func next_level():
     print('level %d' % level)
     $level_label.text = 'Level ' + str(level)
     time_left = TIME_LIMIT
+    ticks = 0
     show_time()
     if level % 2 == 1:
         add_laser(1)
@@ -167,7 +169,7 @@ func collect_gem(gem):
     $pickup_sound.play()
     add_score(10)
     gems.erase(gem)
-    if $ship.use_agent:
+    if use_agent:
         $ship.agent.gem_collected()
 
     if gems == []:
@@ -198,10 +200,12 @@ func laser_hit(obj):
 
         update_mesh.call_deferred()
 
-func _on_timer_timeout():
-    time_left -= 0.5
-    show_time()
-    if time_left <= 0:
-        $game_over.show()
-        print('final score: %d' % score)
-        get_tree().paused = true
+func _physics_process(_delta):
+    ticks += 1
+    if ticks % 30 == 0:
+        time_left -= 0.5
+        show_time()
+        if time_left <= 0:
+            $game_over.show()
+            print('final score: %d' % score)
+            get_tree().paused = true

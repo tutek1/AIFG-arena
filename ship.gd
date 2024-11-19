@@ -4,7 +4,6 @@ const ROTATE_SPEED = 4
 const ACCEL = 150
 
 @onready var Laser = preload('res://laser.tscn')
-@onready var use_agent = get_parent().use_agent
 @onready var agent = get_node('agent')
 @onready var RADIUS = get_node('CollisionShape2D').shape.radius
 
@@ -47,6 +46,8 @@ func convert_mesh(mesh):
                 edge_map[e] = i
     
 func _physics_process(delta):
+    var use_agent = get_parent().use_agent
+
     var action
     if use_agent:
         if get_parent().building or get_parent().gems == []:
