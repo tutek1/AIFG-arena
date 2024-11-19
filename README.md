@@ -116,7 +116,7 @@ The game accepts an argument `-seed` that specifies a random seed for the game. 
 $ godot -- -seed 2
 ```
 
-Additionally you may specify a range of seeds such as `1:5`, in which case the game will automatically run repeatedly, once for each seed in the given range.  After all games are complete, the program will report the average score achieved over all games.
+Additionally you may specify a range of seeds such as `-seed 1:5`, in which case the game will automatically run repeatedly, once for each seed in the given range.  After all games are complete, the program will report the average score achieved over all games.
 
 When you specify one or more seeds, the game will always be controlled by the agent, not by the keyboard.
 
