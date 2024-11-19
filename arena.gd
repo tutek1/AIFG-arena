@@ -114,11 +114,12 @@ func build_level():
         while true:
             gem = GemClass.instantiate()
             gem.position = random_point(extent.grow(-50))
-            if avoid.any(func(a): return collides(a, gem)):
-                continue
 
-            if is_reachable(gem.position, 0):
+            if (not avoid.any(func(a): return collides(a, gem)) and
+                is_reachable(gem.position, 0)):
                 break
+
+            gem.free()
 
         $gems.add_child(gem)
         gems.append(gem)
