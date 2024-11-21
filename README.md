@@ -21,7 +21,7 @@ The game consists of a series of levels, each containing walls and gems.  Once y
 
 To control your ship from the keyboard, press the left or right arrow keys to rotate.  You can thrust forward by pressing Ctrl, Shift, A, or Z.  If you hit a wall, you will bounce off it and lose some of your velocity.
 
-You begin with one missile, and gain an additional level after completing every two levels (i.e. on levels 3, 5, and so on).  To fire a missile, press the space bar.  It will destroy any interior wall it hits.  (The side walls around the edges of the screen cannot be destroyed).
+You begin with one missile, and gain an additional missile after completing every two levels (i.e. on levels 3, 5, and so on).  To fire a missile, press the space bar.  It will destroy any interior wall it hits.  (The side walls around the edges of the screen cannot be destroyed).
 
 You gain 10 points for each gem that you collect.  Also, if you finish a level before the 60-second time limit is up then you gain one point for every remaining second on the clock.
 
