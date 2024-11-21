@@ -41,7 +41,7 @@ In `agent.gd` you will need to implement the `action()` method, which the game c
 
 * `polygons: Array[PackedVector2Array]`
 
-  A navigation mesh representing open space in the level.  The mesh includes all space that is at least `ship.RADIUS` pixels from any wall.  The ship's collision area is a circle with this radius, so this guarantees that the ship can navigate to any point in the mesh without a wall collision.
+  A [navigation mesh](https://en.wikipedia.org/wiki/Navigation_mesh) representing open space in the level.  The mesh includes all space that is at least `ship.RADIUS` pixels from any wall.  The ship's collision area is a circle with this radius, so this guarantees that the ship can navigate to any point in the mesh without a wall collision.
 
   The mesh consists of a set of polygons, indexed from 0.  `polygons[i]` holds the geometry of the `i`-th polygon in the mesh, represented as a `PackedVector2Array` containing the coordinates of all vertices in the polygon in order.  Each vertex position is represented as a `Vector2`.
 
