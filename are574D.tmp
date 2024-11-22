@@ -46,7 +46,7 @@ process_mode = 1
 editor_description = "This is the description."
 script = ExtResource("1_1v0vr")
 use_agent = true
-random_seed = 107
+random_seed = 99
 show_navmesh = true
 show_path = true
 
