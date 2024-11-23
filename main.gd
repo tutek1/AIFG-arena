@@ -5,8 +5,7 @@ extends Node2D
 var random_seed = -1
 var last_seed = -1
 
-var total_score = 0
-var num_games = 0
+var scores = []
 
 var arena
 
@@ -40,8 +39,7 @@ func start_game():
 
 func on_game_over():
     if last_seed != -1:
-        num_games += 1
-        total_score += arena.score
+        scores.append(arena.score)
 
         if random_seed < last_seed:
             remove_child(arena)
@@ -49,4 +47,9 @@ func on_game_over():
             random_seed += 1
             start_game()
         else:
-            print('average score (%d games): %.1f' % [num_games, 1.0 * total_score / num_games])
+            var num_games = scores.size()
+            var sum = 0
+            for s in scores:
+                sum += s
+            print('scores: ' + str(scores))
+            print('average score (%d games): %.1f' % [num_games, 1.0 * sum / num_games])
