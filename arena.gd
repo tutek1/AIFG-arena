@@ -154,6 +154,9 @@ func build_level():
     building = false
     get_tree().paused = false
 
+    if use_agent and $ship.agent.has_method('new_level'):
+        $ship.agent.new_level()
+
 func show_time():
     var t = ceili(time_left)
     var frac = t - floori(time_left)
