@@ -1,10 +1,9 @@
-[gd_scene load_steps=20 format=3 uid="uid://dkbyqg4etp3pv"]
+[gd_scene load_steps=19 format=3 uid="uid://dkbyqg4etp3pv"]
 
 [ext_resource type="Script" path="res://arena.gd" id="1_1v0vr"]
 [ext_resource type="Script" path="res://ship.gd" id="1_cqiuf"]
 [ext_resource type="Texture2D" uid="uid://c3xsd1qu1dppp" path="res://images/character.png" id="1_p64oq"]
 [ext_resource type="Script" path="res://nav_region.gd" id="3_fxh1s"]
-[ext_resource type="Texture2D" uid="uid://dis3lf8gvqfav" path="res://images/icon.svg" id="4_22a54"]
 [ext_resource type="PackedScene" uid="uid://bi0cmvb2q7pgx" path="res://wall.tscn" id="4_twsyb"]
 [ext_resource type="AudioStream" uid="uid://1xkpynp3f5wl" path="res://sounds/Fantasy_UI (6).wav" id="5_ahoe7"]
 [ext_resource type="Texture2D" uid="uid://7fkwwqmlf33i" path="res://images/sparkle.png" id="5_pv7v0"]
@@ -46,7 +45,7 @@ process_mode = 1
 editor_description = "This is the description."
 script = ExtResource("1_1v0vr")
 use_agent = true
-random_seed = 107
+random_seed = 97
 show_navmesh = true
 show_path = true
 
@@ -83,11 +82,6 @@ script = ExtResource("3_fxh1s")
 
 [node name="lasers" type="Node2D" parent="."]
 unique_name_in_owner = true
-
-[node name="debug_point" type="Sprite2D" parent="."]
-modulate = Color(1, 0, 0, 1)
-scale = Vector2(0.3, 0.3)
-texture = ExtResource("4_22a54")
 
 [node name="debug_path" type="Line2D" parent="."]
 unique_name_in_owner = true

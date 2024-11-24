@@ -1,12 +1,16 @@
 extends Node2D
 
-const THRUST_TOLERANCE: float = 0.2
-const DIST_TOLERANCE: float = 50
-const SHOOT_TICK_DELAY: int = 150
+const ANGLE_TOLERANCE: float = 0.01
+const THRUST_TOLERANCE: float = 0.18
+const DIST_TOLERANCE: float = 40
+const DIST_TOLER_SPEED_MAX_ADJUST: float = 55
+const SHOOT_TICK_DELAY: int = 130
 const ANGLE_SHOT_TOLERANCE: float = 0.01
 const MIN_DIVERGENCE_SHOOT: int = 200
 const MAX_DIVERGENCE_SHOOT: int = 400 
-const DIST_SHIP_TO_GEM_WEIGHT: float = 4
+const DIST_SHIP_TO_GEM_WEIGHT: float = 4.75
+const MIN_LERP_PORTAL: float = 0.1
+const MAX_LERP_PORTAL: float = 0.9
 
 @onready var arena : Node2D = get_tree().current_scene
 @onready var ship : CharacterBody2D = get_parent()
@@ -25,6 +29,7 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 			polygons: Array[PackedVector2Array], neighbors: Array[Array]):
 	_ticks += 1
 	
+	print(Engine.get_frames_per_second())
 	# Check which polygon we are in
 	var is_in_polygon_idx: int
 	for poly_idx: int in range(0, polygons.size()):
@@ -44,7 +49,8 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 	
 	# Check if already close enough to a target along the path
 	var dist_to_target = _path_target.distance_to(ship.position)
-	while dist_to_target < DIST_TOLERANCE and _path.size() > 1:
+	var speed_dist_adjust : float = lerp(0.0, DIST_TOLER_SPEED_MAX_ADJUST, float(ship.velocity.length())/ship.ACCEL)
+	while dist_to_target < DIST_TOLERANCE + speed_dist_adjust and _path.size() > 1:
 		_path.pop_back()
 		_path_target = _path.back()
 		dist_to_target = _path_target.distance_to(ship.position)
@@ -80,9 +86,9 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 	else:
 		var dir_to_target: Vector2 = _path_target - (ship.position + ship.velocity)
 		var angle_to_target: float = dir_to_target.angle_to(ship.transform.x)
-		if angle_to_target > 0:
+		if angle_to_target > ANGLE_TOLERANCE:
 			spin = -1
-		else:
+		elif angle_to_target < -ANGLE_TOLERANCE:
 			spin = 1
 		
 		if -THRUST_TOLERANCE < angle_to_target and angle_to_target < THRUST_TOLERANCE:
@@ -93,19 +99,18 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 
 # Called every time the agent has bounced off a wall.
 func bounce():
-	_path.clear()
+	_path.clear()	# Reset path
 
 # Called every time a gem has been collected.
 func gem_collected():
-	_path.clear()
+	_path.clear()	# Reset path
 
+# A data class used for pathfinding
 class PathNode:
-	var idx: int
 	var parent_idx: int
 	var dist: float
 
 func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighbors: Array[Array]):
-	
 	# Setup the queue and start polygon
 	var start_poly_idx: int = _get_closest_polygon_idx_to_ship(polygons)
 	var poly_queue: Array[int]
@@ -115,12 +120,11 @@ func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighb
 	var visited : Array[PathNode]
 	visited.resize(polygons.size())
 	var start_node: PathNode = PathNode.new()
-	start_node.idx = start_poly_idx
 	start_node.parent_idx = start_poly_idx
 	start_node.dist = 0
 	visited[start_poly_idx] = start_node
 	
-	# Build a tree like structure
+	# Build a tree like structure from the navmesh
 	while not poly_queue.is_empty():
 		var curr_node_idx : int = poly_queue.pop_front()
 		var curr_poly : PackedVector2Array = polygons[curr_node_idx]
@@ -133,12 +137,13 @@ func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighb
 			
 			var neighbor_node: PathNode = PathNode.new()
 			neighbor_node.dist = curr_dist + dist_to_neighbor
-			neighbor_node.idx = neighbor_idx
 			neighbor_node.parent_idx = curr_node_idx
 			
 			# Already visited
 			var visited_node: PathNode = visited[neighbor_idx]
 			if visited_node != null:
+				
+				# Check if we have closer path than already present
 				if neighbor_node.dist < visited_node.dist:
 					visited_node.dist = neighbor_node.dist 
 					visited_node.parent_idx = curr_node_idx
@@ -169,7 +174,7 @@ func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighb
 	_path.append(goal_target)
 	var last_point: Vector2 = goal_target
 	
-	# Traverse the tree until start poly is reached
+	# Traverse the tree from goal to start
 	while goal_poly_idx != start_poly_idx:
 		var curr_poly: PackedVector2Array = polygons[goal_poly_idx]
 		var next_poly: PackedVector2Array = polygons[visited[goal_poly_idx].parent_idx]
@@ -187,13 +192,19 @@ func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighb
 						break
 			if portal_point2 != Vector2.INF: break
 		
+		# Add a point on the portal line closest to the mid point of the ship and the last point
 		var ship_last_point_mid: Vector2 = (ship.position + last_point) / 2
-		last_point = _get_closest_point_on_line(portal_point1, portal_point2, ship_last_point_mid, 0.05, 0.95)
+		last_point = _get_closest_point_on_line(portal_point1,
+												portal_point2,
+												ship_last_point_mid,
+												MIN_LERP_PORTAL,
+												MAX_LERP_PORTAL)
 		_path.append(last_point)
 		
 		goal_poly_idx = visited[goal_poly_idx].parent_idx
 
-func _get_polygon_center(poly : PackedVector2Array):
+# Returns the mid-point of the polygon
+func _get_polygon_center(poly : PackedVector2Array) -> Vector2:
 	var point: Vector2 = Vector2.ZERO
 	
 	for vertex: Vector2 in poly:
@@ -201,6 +212,7 @@ func _get_polygon_center(poly : PackedVector2Array):
 	
 	return point/poly.size()
 
+# Returns the length of the positions in the _path variable
 func _get_path_len() -> float:
 	var curr_point: Vector2 = ship.position
 	var length: float = 0
@@ -211,6 +223,8 @@ func _get_path_len() -> float:
 	
 	return length
 
+# Returns the max divergence of the positions in the _path variable
+# Divergence - max distance of points from the line (from ship to goal)
 func _get_path_divergence() -> float:
 	var max_length: float = 0
 	
@@ -220,6 +234,7 @@ func _get_path_divergence() -> float:
 	
 	return max_length
 
+# Returns the idx of the polygon that is the closest to the ship
 func _get_closest_polygon_idx_to_ship(polygons: Array[PackedVector2Array]) -> int:
 	var min_dist : float = INF
 	var closest_idx : int
@@ -236,6 +251,7 @@ func _get_closest_polygon_idx_to_ship(polygons: Array[PackedVector2Array]) -> in
 	
 	return closest_idx
 
+# Returns the position of the closest gem to the ship
 func _get_closest_gem(gems : Array[Vector2]) -> Vector2:
 	var min_dist = ship.position.distance_to(gems[0])
 	var closest_gem = gems[0]
@@ -248,6 +264,7 @@ func _get_closest_gem(gems : Array[Vector2]) -> Vector2:
 	
 	return closest_gem
 
+# Returns the closest point on a line to a given point
 func _get_closest_point_on_line(line_a : Vector2, line_b : Vector2, point : Vector2,
 								min_t : float = 0.0, max_t : float = 1.0) -> Vector2:
 	var line: Vector2 = line_b - line_a
