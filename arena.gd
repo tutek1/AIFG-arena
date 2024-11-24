@@ -47,6 +47,9 @@ func _ready():
     get_tree().paused = true
     next_level.call_deferred()
 
+func wall_polygon(wall):
+    return wall.transform * wall.get_node('Polygon2D').polygon
+
 func convert_mesh():
     var mesh = $nav_region.navigation_polygon.get_navigation_mesh()
     var vertices = mesh.get_vertices()
@@ -54,7 +57,7 @@ func convert_mesh():
 
     wall_polygons = []
     for w in walls:
-        wall_polygons.append(w.transform * w.get_node('Polygon2D').polygon)
+        wall_polygons.append(wall_polygon(w))
 
     polygons = []
     neighbors = []
@@ -89,6 +92,26 @@ func is_reachable(pos, epsilon):
     assert (path.size() > 0, 'navigation server is not ready')
     return path[path.size() - 1].distance_to(pos) <= epsilon
 
+func place_gems(count, extent):
+    for i in range(count):
+        var gem = null
+        while true:
+            gem = GemClass.instantiate()
+            gem.position = random_point(extent.grow(-50))
+
+            if (gem.position.distance_to($ship.position) > 100 and
+                gems.all(func(g):
+                    return gem.position.distance_to(g.position) > 30) and
+                polygons.any(func(poly):
+                    return Geometry2D.is_point_in_polygon(gem.position, poly)) and
+                is_reachable(gem.position, 0)):
+                break
+
+            gem.free()
+
+        $gems.add_child(gem)
+        gems.append(gem)
+
 func build_level():
     get_tree().paused = true
     building = true
@@ -116,40 +139,24 @@ func build_level():
             w.scale.x = Random.randf_range(20, 50)
             w.rotation = Random.randf_range(0, PI)
             w.position = random_point(extent1)
-            %walls.add_child(w)
+            var poly = wall_polygon(w)
+            var p = Util.get_closest_point_on_polygon($ship.position, poly)
+            if p.distance_to($ship.position) > 50:
+                %walls.add_child(w)
 
-            $nav_region.rebake()
-            await get_tree().physics_frame
+                $nav_region.rebake()
+                await get_tree().physics_frame
+                if key_points.all(func(a): return is_reachable(a, 10)):
+                    break
 
-            if key_points.all(func(a): return is_reachable(a, 10)):
-                break
-
-            $walls.remove_child(w)
+                $walls.remove_child(w)
             w.queue_free()
 
         walls.append(w)
 
     await get_tree().physics_frame
     convert_mesh()
-
-    for i in range(count):
-        var gem = null
-        while true:
-            gem = GemClass.instantiate()
-            gem.position = random_point(extent.grow(-50))
-
-            if (gem.position.distance_to($ship.position) > 100 and
-                gems.all(func(g):
-                    return gem.position.distance_to(g.position) > 30) and
-                polygons.any(func(poly):
-                    return Geometry2D.is_point_in_polygon(gem.position, poly)) and
-                is_reachable(gem.position, 0)):
-                break
-
-            gem.free()
-
-        $gems.add_child(gem)
-        gems.append(gem)
+    place_gems(count, extent)
 
     building = false
     get_tree().paused = false
