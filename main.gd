@@ -49,7 +49,18 @@ func on_game_over():
         else:
             var num_games = scores.size()
             var sum = 0
-            for s in scores:
-                sum += s
+            for x in scores:
+                sum += x
+            var avg = 1.0 * sum / num_games
             print('scores: ' + str(scores))
-            print('average score (%d games): %.1f' % [num_games, 1.0 * sum / num_games])
+            print('average score (%d games): %.1f' % [num_games, avg])
+
+            if num_games >= 10:
+                # Compute a one-sample t test for the average win rate.
+                const t = 2.0   # approx. critical t value for upper-tail probability 0.025
+                sum = 0
+                for x in scores:
+                    sum += (x - avg) ** 2
+                var s = sqrt(sum / (num_games - 1))     # sample standard deviation
+                var m = t * s / sqrt(num_games)
+                print('~95%% confidence interval for win rate: [%.1f, %.1f]' % [avg - m, avg + m])
