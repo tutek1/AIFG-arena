@@ -1,9 +1,9 @@
 extends Node2D
 
 const ANGLE_TOLERANCE: float = 0.01
-const THRUST_TOLERANCE: float = 0.18
-const DIST_TOLERANCE: float = 40
-const DIST_TOLER_SPEED_MAX_ADJUST: float = 55
+const THRUST_TOLERANCE: float = 0.1
+const DIST_TOLERANCE: float = 45
+const DIST_TOLER_SPEED_MAX_ADJUST: float = 20
 const SHOOT_TICK_DELAY: int = 130
 const ANGLE_SHOT_TOLERANCE: float = 0.01
 const MIN_DIVERGENCE_SHOOT: int = 200
