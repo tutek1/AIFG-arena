@@ -1,16 +1,18 @@
 extends Node2D
 
-const ANGLE_TOLERANCE: float = 0.01
+const ANGLE_TOLERANCE: float = 0.02
 const THRUST_TOLERANCE: float = 0.1
 const DIST_TOLERANCE: float = 45
-const DIST_TOLER_SPEED_MAX_ADJUST: float = 20
+const DIST_TOLER_SPEED_MAX_ADJUST: float = 40
 const SHOOT_TICK_DELAY: int = 130
 const ANGLE_SHOT_TOLERANCE: float = 0.01
 const MIN_DIVERGENCE_SHOOT: int = 200
-const MAX_DIVERGENCE_SHOOT: int = 400 
+const MAX_DIVERGENCE_SHOOT: int = 500 
 const DIST_SHIP_TO_GEM_WEIGHT: float = 4.75
 const MIN_LERP_PORTAL: float = 0.1
 const MAX_LERP_PORTAL: float = 0.9
+
+const SMOOTH_PATH_ROUGHNESS: float = 10
 
 @onready var arena : Node2D = get_tree().current_scene
 @onready var ship : CharacterBody2D = get_parent()
@@ -49,7 +51,7 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 	
 	# Check if already close enough to a target along the path
 	var dist_to_target = _path_target.distance_to(ship.position)
-	var speed_dist_adjust : float = lerp(0.0, DIST_TOLER_SPEED_MAX_ADJUST, float(ship.velocity.length())/ship.ACCEL)
+	var speed_dist_adjust : float = lerp(DIST_TOLER_SPEED_MAX_ADJUST, 0.0, float(ship.velocity.length())/ship.ACCEL)
 	while dist_to_target < DIST_TOLERANCE + speed_dist_adjust and _path.size() > 1:
 		_path.pop_back()
 		_path_target = _path.back()
@@ -84,7 +86,7 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 	
 	# Navigate to target
 	else:
-		var dir_to_target: Vector2 = _path_target - (ship.position + ship.velocity)
+		var dir_to_target: Vector2 = _path_target - (ship.position + (ship.velocity * 1.1))
 		var angle_to_target: float = dir_to_target.angle_to(ship.transform.x)
 		if angle_to_target > ANGLE_TOLERANCE:
 			spin = -1
@@ -170,8 +172,10 @@ func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighb
 				min_dist_gem = path_dist
 	
 	# Clear the path and build it
-	_path.clear()
-	_path.append(goal_target)
+	var temp_path : Array[Vector2]
+	#_path.clear()
+	temp_path.append(goal_target)
+	#_path.append(goal_target)
 	var last_point: Vector2 = goal_target
 	
 	# Traverse the tree from goal to start
@@ -199,9 +203,28 @@ func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighb
 												ship_last_point_mid,
 												MIN_LERP_PORTAL,
 												MAX_LERP_PORTAL)
-		_path.append(last_point)
+		temp_path.append(last_point)
 		
 		goal_poly_idx = visited[goal_poly_idx].parent_idx
+	
+	# Path smoothing
+	_path.clear()
+	#_path = temp_path
+	_path.append(temp_path.front())
+	var curr_point : Vector2 = temp_path.back()
+	var idx : int = 0
+	while idx != temp_path.size() - 1:
+		for idx_next in range(idx + 2, temp_path.size()):
+			# Check if from curr to next can be reached
+			var next_point : Vector2 = temp_path[idx_next]
+			
+			if not _check_if_line_is_in_polygons(curr_point, next_point, polygons):
+				_path.append(temp_path[idx_next - 1])
+				idx = idx_next - 1
+				break
+		
+		idx += 1
+		curr_point = temp_path[idx]
 
 # Returns the mid-point of the polygon
 func _get_polygon_center(poly : PackedVector2Array) -> Vector2:
@@ -272,3 +295,16 @@ func _get_closest_point_on_line(line_a : Vector2, line_b : Vector2, point : Vect
 	t = clamp(t, min_t, max_t)
 	
 	return line_a + line * t
+
+func _check_if_line_is_in_polygons(point1 : Vector2, point2 : Vector2, polygons : Array[PackedVector2Array]):
+	var dir_to_next : Vector2 = (point2 - point1).normalized()
+	
+	var temp_point : Vector2 = point1
+	while temp_point.distance_to(point2) > SMOOTH_PATH_ROUGHNESS:
+		temp_point += dir_to_next * SMOOTH_PATH_ROUGHNESS
+		
+		for poly in polygons:
+			if not Geometry2D.is_point_in_polygon(temp_point, poly):
+				return false
+	
+	return true

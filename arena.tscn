@@ -2,16 +2,16 @@
 
 [ext_resource type="Script" path="res://arena.gd" id="1_1v0vr"]
 [ext_resource type="Script" path="res://ship.gd" id="1_cqiuf"]
-[ext_resource type="Texture2D" uid="uid://c3xsd1qu1dppp" path="res://images/character.png" id="1_p64oq"]
+[ext_resource type="Texture2D" uid="uid://cbyo5gnf2m8r6" path="res://images/character.png" id="1_p64oq"]
 [ext_resource type="Script" path="res://nav_region.gd" id="3_fxh1s"]
 [ext_resource type="PackedScene" uid="uid://bi0cmvb2q7pgx" path="res://wall.tscn" id="4_twsyb"]
-[ext_resource type="AudioStream" uid="uid://1xkpynp3f5wl" path="res://sounds/Fantasy_UI (6).wav" id="5_ahoe7"]
-[ext_resource type="Texture2D" uid="uid://7fkwwqmlf33i" path="res://images/sparkle.png" id="5_pv7v0"]
-[ext_resource type="AudioStream" uid="uid://df755r0dfovtm" path="res://sounds/Hammer2.wav" id="6_ehtxo"]
+[ext_resource type="AudioStream" uid="uid://bibof36s3vahk" path="res://sounds/Fantasy_UI (6).wav" id="5_ahoe7"]
+[ext_resource type="Texture2D" uid="uid://rdoehr0sjqcp" path="res://images/sparkle.png" id="5_pv7v0"]
+[ext_resource type="AudioStream" uid="uid://tvv6tvvvstgo" path="res://sounds/Hammer2.wav" id="6_ehtxo"]
 [ext_resource type="Script" path="res://agent.gd" id="7_iugb6"]
-[ext_resource type="AudioStream" uid="uid://bl3xkts4vuomq" path="res://sounds/Glitch_13.wav" id="9_avenh"]
-[ext_resource type="AudioStream" uid="uid://b1snhponqd0ki" path="res://sounds/Whoosh 3.wav" id="9_ogv0w"]
-[ext_resource type="AudioStream" uid="uid://cswuhnlp08fy4" path="res://sounds/Impact_2_Mid.wav" id="10_3iuv8"]
+[ext_resource type="AudioStream" uid="uid://orv52u3hqjbk" path="res://sounds/Glitch_13.wav" id="9_avenh"]
+[ext_resource type="AudioStream" uid="uid://cl5s8wu1clign" path="res://sounds/Whoosh 3.wav" id="9_ogv0w"]
+[ext_resource type="AudioStream" uid="uid://bjlw5ewnlk0eu" path="res://sounds/Impact_2_Mid.wav" id="10_3iuv8"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_f85l1"]
 vertices = PackedVector2Array(1330, 830, 70.9375, 830, 70.0625, 105, 1330, 105)
@@ -41,8 +41,34 @@ font_size = 30
 font_size = 60
 
 [node name="arena" type="Node2D"]
+_import_path = NodePath("")
+unique_name_in_owner = false
 process_mode = 1
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
 editor_description = "This is the description."
+visible = true
+modulate = Color(1, 1, 1, 1)
+self_modulate = Color(1, 1, 1, 1)
+show_behind_parent = false
+top_level = false
+clip_children = 0
+light_mask = 1
+visibility_layer = 1
+z_index = 0
+z_as_relative = true
+y_sort_enabled = false
+texture_filter = 0
+texture_repeat = 0
+material = null
+use_parent_material = false
+position = Vector2(0, 0)
+rotation = 0.0
+scale = Vector2(1, 1)
+skew = 0.0
 script = ExtResource("1_1v0vr")
 use_agent = true
 random_seed = 92
@@ -50,7 +76,35 @@ show_navmesh = true
 show_path = true
 
 [node name="walls" type="Node2D" parent="." groups=["walls"]]
+_import_path = NodePath("")
 unique_name_in_owner = true
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+visible = true
+modulate = Color(1, 1, 1, 1)
+self_modulate = Color(1, 1, 1, 1)
+show_behind_parent = false
+top_level = false
+clip_children = 0
+light_mask = 1
+visibility_layer = 1
+z_index = 0
+z_as_relative = true
+y_sort_enabled = false
+texture_filter = 0
+texture_repeat = 0
+material = null
+use_parent_material = false
+position = Vector2(0, 0)
+rotation = 0.0
+scale = Vector2(1, 1)
+skew = 0.0
+script = null
 
 [node name="top_wall" parent="walls" instance=ExtResource("4_twsyb")]
 unique_name_in_owner = true
@@ -81,7 +135,35 @@ navigation_polygon = SubResource("NavigationPolygon_f85l1")
 script = ExtResource("3_fxh1s")
 
 [node name="lasers" type="Node2D" parent="."]
+_import_path = NodePath("")
 unique_name_in_owner = true
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+visible = true
+modulate = Color(1, 1, 1, 1)
+self_modulate = Color(1, 1, 1, 1)
+show_behind_parent = false
+top_level = false
+clip_children = 0
+light_mask = 1
+visibility_layer = 1
+z_index = 0
+z_as_relative = true
+y_sort_enabled = false
+texture_filter = 0
+texture_repeat = 0
+material = null
+use_parent_material = false
+position = Vector2(0, 0)
+rotation = 0.0
+scale = Vector2(1, 1)
+skew = 0.0
+script = null
 
 [node name="debug_path" type="Line2D" parent="."]
 unique_name_in_owner = true
@@ -119,10 +201,66 @@ visible = false
 shape = SubResource("CircleShape2D_pdhkn")
 
 [node name="agent" type="Node2D" parent="ship"]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+visible = true
+modulate = Color(1, 1, 1, 1)
+self_modulate = Color(1, 1, 1, 1)
+show_behind_parent = false
+top_level = false
+clip_children = 0
+light_mask = 1
+visibility_layer = 1
+z_index = 0
+z_as_relative = true
+y_sort_enabled = false
+texture_filter = 0
+texture_repeat = 0
+material = null
+use_parent_material = false
+position = Vector2(0, 0)
+rotation = 0.0
+scale = Vector2(1, 1)
+skew = 0.0
 script = ExtResource("7_iugb6")
 
 [node name="gems" type="Node2D" parent="."]
+_import_path = NodePath("")
 unique_name_in_owner = true
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+visible = true
+modulate = Color(1, 1, 1, 1)
+self_modulate = Color(1, 1, 1, 1)
+show_behind_parent = false
+top_level = false
+clip_children = 0
+light_mask = 1
+visibility_layer = 1
+z_index = 0
+z_as_relative = true
+y_sort_enabled = false
+texture_filter = 0
+texture_repeat = 0
+material = null
+use_parent_material = false
+position = Vector2(0, 0)
+rotation = 0.0
+scale = Vector2(1, 1)
+skew = 0.0
+script = null
 
 [node name="score_label" type="Label" parent="."]
 offset_left = 1127.0
