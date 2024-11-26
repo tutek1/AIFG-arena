@@ -21,7 +21,7 @@ The game consists of a series of levels, each containing walls and gems.  Once y
 
 To control your ship from the keyboard, press the left or right arrow keys to rotate.  You can thrust forward by pressing Ctrl, Shift, A, or Z.  If you hit a wall, you will bounce off it and lose some of your velocity.
 
-You begin with one missile, and gain an additional level after completing every two levels (i.e. on levels 3, 5, and so on).  To fire a missile, press the space bar.  It will destroy any interior wall it hits.  (The side walls around the edges of the screen cannot be destroyed).
+You begin with one missile, and gain an additional missile after completing every two levels (i.e. on levels 3, 5, and so on).  To fire a missile, press the space bar.  It will destroy any interior wall it hits.  (The side walls around the edges of the screen cannot be destroyed).
 
 You gain 10 points for each gem that you collect.  Also, if you finish a level before the 60-second time limit is up then you gain one point for every remaining second on the clock.
 
@@ -29,7 +29,7 @@ You gain 10 points for each gem that you collect.  Also, if you finish a level b
 
 To write an agent in GDScript, edit the file `agent.gd` in this source distribution.  You will need to set the Use Agent property (see below) to make your agent active when you run the game.
 
-In `agent.gd` you will need to implement the action() method, which the game calls on every tick to find out what your agent wants to do.  action() takes four arguments:
+In `agent.gd` you will need to implement the `action()` method, which the game calls on every tick to find out what your agent wants to do.  `action()` takes four arguments:
 
 * `walls: Array[PackedVector2Array]`
 
@@ -41,7 +41,7 @@ In `agent.gd` you will need to implement the action() method, which the game cal
 
 * `polygons: Array[PackedVector2Array]`
 
-  A navigation mesh representing open space in the level.  The mesh includes all space that is at least `ship.RADIUS` pixels from any wall.  The ship's collision area is a circle with this radius, so this guarantees that the ship can navigate to any point in the mesh without a wall collision.
+  A [navigation mesh](https://en.wikipedia.org/wiki/Navigation_mesh) representing open space in the level.  The mesh includes all space that is at least `ship.RADIUS` pixels from any wall.  The ship's collision area is a circle with this radius, so this guarantees that the ship can navigate to any point in the mesh without a wall collision.
 
   The mesh consists of a set of polygons, indexed from 0.  `polygons[i]` holds the geometry of the `i`-th polygon in the mesh, represented as a `PackedVector2Array` containing the coordinates of all vertices in the polygon in order.  Each vertex position is represented as a `Vector2`.
 
@@ -62,19 +62,19 @@ The action() method must return an array containing three elements:
 At the top of agent.gd, a couple of useful global variables are defined:
 
 * `ship` is the Godot object representing the player's ship.  It is a `CharacterBody2D` which has many attributes.  The most useful of these are
-	- `ship.position` (Vector2): the ship's current position
-	- `ship.velocity` (Vector2): the ship's current velocity in pixels per second
-	- `ship.rotation` (float): the ship's rotation in radians, where 0 points rightward
-	- `ship.ACCEL` (int): a constant representing the ship's acceleration in pixels per second squared whenever it thrusts forward
-	- `ship.ROTATE_SPEED` (int): a constant representing the ship's rotational speed in radians per second whenever it rotates
-	- `ship.RADIUS` (int): a constant representing the radius of the ship's collision area in pixels
+    - `ship.position` (Vector2): the ship's current position
+    - `ship.velocity` (Vector2): the ship's current velocity in pixels per second
+    - `ship.rotation` (float): the ship's rotation in radians, where 0 points rightward
+    - `ship.ACCEL` (int): a constant representing the ship's acceleration in pixels per second squared whenever it thrusts forward
+    - `ship.ROTATE_SPEED` (int): a constant representing the ship's rotational speed in radians per second whenever it rotates
+    - `ship.RADIUS` (int): a constant representing the radius of the ship's collision area in pixels
 
   You __should not modify__ any of these ship attributes in your agent code.  The game will update them automatically based on the actions you return from the action() method.
 
 * `debug_path` is a `Line2D` object that can display a path consisting of a series of line segments.  If your agent calculates a path to follow, you can use `debug_path` to display it for debugging purposes.  To do so, call these methods:
 
-	- `debug_path.clear_points()`: clear all points in this path
-	- `debug_path.add_point(p: Vector2)`: add a point to the path
+    - `debug_path.clear_points()`: clear all points in this path
+    - `debug_path.add_point(p: Vector2)`: add a point to the path
 
   The path will only be visible when you set the Show Path property (see below).
 
@@ -82,13 +82,13 @@ At the top of agent.gd, a couple of useful global variables are defined:
 
 agent.gd contains a couple of notification methods that the game calls when certain events happen:
 
-* bounce() is called every time the agent has bounced off a wall.
+* `bounce()` is called every time the agent has bounced off a wall.
 
-* gem_collected() is called each time the agent has collected a gem.
+* `gem_collected()` is called each time the agent has collected a gem.
 
 The default implementations of these methods do nothing.  You may modify them as you like.
 
-### Game properties
+## Game properties
 
 In the Godot editor, if you click on the top-level node ("arena") in the Scene tree on the left then the Inspector (on the right) will display various properties that you can edit:
 
@@ -101,6 +101,38 @@ In the Godot editor, if you click on the top-level node ("arena") in the Scene t
 * Show NavMesh (default = false): If true, the game will display the navigation mesh for debugging purposes.
 
 * Show Path (default = false): If true, the game will display any path that you have set in `debug_path` as described above.
+
+## Running from the command line
+
+You can run the game from the command line.  To do so, open a terminal window in the project directory and run
+
+```
+$ godot
+```
+
+The game accepts an argument `-seed` that specifies a random seed for the game.  You should include `--` before `-seed`, so that Godot will interpret this as an argument to be passed to the program itself.  For example:
+
+```
+$ godot -- -seed 2
+```
+
+Additionally you may specify a range of seeds such as `-seed 1:5`, in which case the game will automatically run repeatedly, once for each seed in the given range.  After all games are complete, the program will report the average score achieved over all games.
+
+When you specify one or more seeds, the game will always be controlled by the agent, not by the keyboard.
+
+You can specify the Godot argument `--fixed-fps` to run a simulation at high speed.  The game's usual rate is 60 fps (frames per second).  Specify a __smaller__ number to run the game more quickly.  For example, `--fixed-fps 30` will run the game at double speed.  `--fixed-fps 2` will run the game at 30 times normal speed.  This is convenient for running a batch of simulations.  For example:
+
+```
+$ godot --fixed-fps 2 -- -seed 1:5
+```
+
+### Reproducibility
+
+For debugging you may wish your runs to be __reproducible__, i.e. for  a given random seed the agent will produce exactly the same score when run at any speed.  To achieve this, follow these rules in writing your agent:
+
+* Do not use a `Timer` object or any Godot function that produces an elapsed number of seconds.  Instead, if you want to keep track of elapsed time then increment a counter each time your agent's `action()` method is called.
+
+* Do not call Godot functions that produce random numbers.  Instead, use the functions `Random.randf_range()` and `Random.randi_range()` provided in the `Random` class in this project.
 
 ## Notes
 
