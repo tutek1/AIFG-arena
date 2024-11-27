@@ -2,8 +2,6 @@ class_name Util
 
 # Given a point p and a polygon, return the point on the polygon that is closest to p.
 static func get_closest_point_on_polygon(p: Vector2, polygon: PackedVector2Array):
-	if Geometry2D.is_point_in_polygon(p, polygon): return p
-	
 	var min_dist = INF
 	var closest_point = null
 	
