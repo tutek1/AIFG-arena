@@ -1,20 +1,21 @@
 extends Node2D
 
 const ANGLE_TOLERANCE: float = 0.02
-const THRUST_TOLERANCE: float = 0.1
-const DIST_TOLERANCE: float = 45
-const DIST_TOLER_SPEED_MAX_ADJUST: float = 40
+const THRUST_TOLERANCE: float = 2
+const SLOWDOWN_DISTANCE: float = 900
+const DIST_TOLERANCE: float = 50
+const DIST_TOLER_SPEED_MAX_ADJUST: float = 15
 const SHOOT_TICK_DELAY: int = 130
-const ANGLE_SHOT_TOLERANCE: float = 0.01
+const ANGLE_SHOT_TOLERANCE: float = 0.02
 const MIN_DIVERGENCE_SHOOT: int = 200
 const MAX_DIVERGENCE_SHOOT: int = 500 
-const DIST_SHIP_TO_GEM_WEIGHT: float = 4.75
-const MIN_LERP_PORTAL: float = 0.1
-const MAX_LERP_PORTAL: float = 0.9
+const DIST_SHIP_TO_GEM_WEIGHT: float = 2
+const MIN_LERP_PORTAL: float = 0.0
+const MAX_LERP_PORTAL: float = 1 - MIN_LERP_PORTAL
 
-const SMOOTH_PATH_ROUGHNESS: float = 10
+const SMOOTH_PATH_ROUGHNESS: float = 5
 
-@onready var arena : Node2D = get_tree().current_scene
+@onready var arena : Node2D = get_parent().get_parent()
 @onready var ship : CharacterBody2D = get_parent()
 @onready var debug_path : Line2D = ship.get_node('../debug_path')
 
@@ -31,7 +32,6 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 			polygons: Array[PackedVector2Array], neighbors: Array[Array]):
 	_ticks += 1
 	
-	print(Engine.get_frames_per_second())
 	# Check which polygon we are in
 	var is_in_polygon_idx: int
 	for poly_idx: int in range(0, polygons.size()):
@@ -39,19 +39,23 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 			is_in_polygon_idx = poly_idx
 			break
 	
-	# Upon change of polygon or path end or wall destroy recalculate
+	# Upon change of polygon or path end or wall destroy recalculate or 30 ticks
 	if _path.size() < 1\
 	or _was_in_polygon_idx != is_in_polygon_idx\
-	or _last_num_walls != walls.size():
+	or _last_num_walls != walls.size()\
+	or _ticks % 30 == 0:
 		_set_path(gems, polygons, neighbors)
-		_path_target = _path.back()
+		if _path.size() == 0:
+			_path_target = gems.pick_random()
+		else:
+			_path_target = _path.back()
 		_was_in_polygon_idx = is_in_polygon_idx
 	
 	_last_num_walls = walls.size()
 	
 	# Check if already close enough to a target along the path
 	var dist_to_target = _path_target.distance_to(ship.position)
-	var speed_dist_adjust : float = lerp(DIST_TOLER_SPEED_MAX_ADJUST, 0.0, float(ship.velocity.length())/ship.ACCEL)
+	var speed_dist_adjust : float = lerp(0.0, DIST_TOLER_SPEED_MAX_ADJUST, float(ship.velocity.length())/ship.ACCEL)
 	while dist_to_target < DIST_TOLERANCE + speed_dist_adjust and _path.size() > 1:
 		_path.pop_back()
 		_path_target = _path.back()
@@ -86,7 +90,8 @@ func action(walls: Array[PackedVector2Array], gems: Array[Vector2],
 	
 	# Navigate to target
 	else:
-		var dir_to_target: Vector2 = _path_target - (ship.position + (ship.velocity * 1.1))
+		var velocity_mult: float = lerp(ship.velocity.length()/ship.ACCEL, 1.0, dist_to_target/SLOWDOWN_DISTANCE)
+		var dir_to_target: Vector2 = _path_target - (ship.position + (ship.velocity * velocity_mult))
 		var angle_to_target: float = dir_to_target.angle_to(ship.transform.x)
 		if angle_to_target > ANGLE_TOLERANCE:
 			spin = -1
@@ -173,13 +178,11 @@ func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighb
 	
 	# Clear the path and build it
 	var temp_path : Array[Vector2]
-	#_path.clear()
 	temp_path.append(goal_target)
-	#_path.append(goal_target)
 	var last_point: Vector2 = goal_target
 	
 	# Traverse the tree from goal to start
-	while goal_poly_idx != start_poly_idx:
+	while goal_poly_idx != start_poly_idx and visited[goal_poly_idx] != null:
 		var curr_poly: PackedVector2Array = polygons[goal_poly_idx]
 		var next_poly: PackedVector2Array = polygons[visited[goal_poly_idx].parent_idx]
 		
@@ -207,24 +210,24 @@ func _set_path(gems: Array[Vector2], polygons: Array[PackedVector2Array], neighb
 		
 		goal_poly_idx = visited[goal_poly_idx].parent_idx
 	
+	
 	# Path smoothing
-	_path.clear()
-	#_path = temp_path
-	_path.append(temp_path.front())
-	var curr_point : Vector2 = temp_path.back()
-	var idx : int = 0
-	while idx != temp_path.size() - 1:
-		for idx_next in range(idx + 2, temp_path.size()):
-			# Check if from curr to next can be reached
+	if temp_path.size() >= 2:
+		var curr_point : Vector2 = ship.position
+		
+		var last_tested_idx : int = temp_path.size() - 2
+		for idx_next in range(last_tested_idx, -1, -1):
 			var next_point : Vector2 = temp_path[idx_next]
-			
 			if not _check_if_line_is_in_polygons(curr_point, next_point, polygons):
-				_path.append(temp_path[idx_next - 1])
-				idx = idx_next - 1
+				last_tested_idx = idx_next + 1
 				break
 		
-		idx += 1
-		curr_point = temp_path[idx]
+		_path.clear()
+		for i in range(0, last_tested_idx + 1):
+			_path.append(temp_path[i])
+	else:
+		_path = temp_path
+	#_path.append(temp_path[0])
 
 # Returns the mid-point of the polygon
 func _get_polygon_center(poly : PackedVector2Array) -> Vector2:
@@ -303,8 +306,13 @@ func _check_if_line_is_in_polygons(point1 : Vector2, point2 : Vector2, polygons 
 	while temp_point.distance_to(point2) > SMOOTH_PATH_ROUGHNESS:
 		temp_point += dir_to_next * SMOOTH_PATH_ROUGHNESS
 		
+		var is_on_polygon : bool = false
 		for poly in polygons:
-			if not Geometry2D.is_point_in_polygon(temp_point, poly):
-				return false
+			if Geometry2D.is_point_in_polygon(temp_point, poly):
+				is_on_polygon = true
+				break
+		
+		if not is_on_polygon:
+			return false
 	
 	return true
